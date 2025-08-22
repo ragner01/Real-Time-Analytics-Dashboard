@@ -1,0 +1,6 @@
+@Real_Time_Analytics_Dashboard_HostAddress = http://localhost:5089
+
+GET {{Real_Time_Analytics_Dashboard_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
