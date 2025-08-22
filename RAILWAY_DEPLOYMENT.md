@@ -12,7 +12,7 @@
 2. **Sign up for free** (no credit card required)
 3. **Create a new cluster** (M0 Free tier)
 4. **Create database user** (remember username/password)
-5. **Get connection string** (looks like: `mongodb+srv://username:password@cluster.mongodb.net/`)
+5. **Get connection string** (looks like: `mongodb+srv://[username]:[password]@[cluster].mongodb.net/`)
 6. **Whitelist IP addresses** (add `0.0.0.0/0` for Railway)
 
 ## 🚂 Step 2: Deploy to Railway
@@ -34,9 +34,9 @@ In Railway dashboard, go to your project → Variables tab:
 
 ```bash
 # Required Variables
-MONGODB_CONNECTION_STRING=mongodb+srv://username:password@cluster.mongodb.net/
+MONGODB_CONNECTION_STRING=mongodb+srv://[username]:[password]@[cluster].mongodb.net/
 MONGODB_DATABASE_NAME=AnalyticsDashboard
-FRONTEND_URL=https://your-netlify-app.netlify.app
+FRONTEND_URL=https://[your-netlify-app].netlify.app
 
 # Railway automatically sets:
 PORT=8080 (or similar)
@@ -56,16 +56,16 @@ Replace the content in `ClientApp/public/_redirects`:
 /*    /index.html   200
 
 # Proxy API calls to your Railway backend
-/api/*  https://your-app-name-production.up.railway.app/api/:splat  200
-/analyticsHub  https://your-app-name-production.up.railway.app/analyticsHub  200
+/api/*  https://[your-app-name].up.railway.app/api/:splat  200
+/analyticsHub  https://[your-app-name].up.railway.app/analyticsHub  200
 ```
 
 ### 3.2 Update Environment Variables
 In Netlify dashboard → Site settings → Environment variables:
 
 ```bash
-REACT_APP_API_URL=https://your-app-name-production.up.railway.app/api
-REACT_APP_SIGNALR_URL=https://your-app-name-production.up.railway.app/analyticsHub
+REACT_APP_API_URL=https://[your-app-name].up.railway.app/api
+REACT_APP_SIGNALR_URL=https://[your-app-name].up.railway.app/analyticsHub
 ```
 
 ## 🎯 Step 4: Test Your Full-Stack App
@@ -115,10 +115,10 @@ railway up
 
 ## 📱 Your App URLs
 
-- **Frontend**: `https://your-netlify-app.netlify.app`
-- **Backend API**: `https://your-app-name-production.up.railway.app`
-- **API Docs**: `https://your-app-name-production.up.railway.app/swagger`
-- **SignalR Hub**: `https://your-app-name-production.up.railway.app/analyticsHub`
+- **Frontend**: `https://[your-netlify-app].netlify.app`
+- **Backend API**: `https://[your-app-name].up.railway.app`
+- **API Docs**: `https://[your-app-name].up.railway.app/swagger`
+- **SignalR Hub**: `https://[your-app-name].up.railway.app/analyticsHub`
 
 ## 🎉 Success!
 

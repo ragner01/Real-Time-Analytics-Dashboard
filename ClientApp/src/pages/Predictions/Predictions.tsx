@@ -118,7 +118,7 @@ const Predictions: React.FC = () => {
   ];
 
   // Get unique metric names
-  const metricNames = [...new Set(metrics?.map(m => m.name) || [])];
+  const metricNames = Array.from(new Set(metrics?.map(m => m.name) || []));
 
   // Generate predictions using different algorithms
   const generatePredictions = () => {

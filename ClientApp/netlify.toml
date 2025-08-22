@@ -11,11 +11,11 @@
   status = 200
 
 # Environment variables for production
-[context.production.environment]
-  REACT_APP_API_URL = "https://your-backend-url.com/api"
+[context.deployment.environment]
+  REACT_APP_API_URL = "https://[your-app-name].up.railway.app/api"
   REACT_APP_ENVIRONMENT = "production"
 
 # Environment variables for preview deployments
 [context.deploy-preview.environment]
-  REACT_APP_API_URL = "https://your-backend-url.com/api"
+  REACT_APP_API_URL = "https://[your-app-name].up.railway.app/api"
   REACT_APP_ENVIRONMENT = "preview"
