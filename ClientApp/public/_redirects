@@ -1,11 +1,7 @@
-# Handle client-side routing
+# Handle client-side routing for SPA
 /*    /index.html   200
 
-# Proxy API calls to your backend (if you deploy it)
-# Uncomment and update the URL below when you deploy your backend
-# /api/*  https://[your-app-name].up.railway.app/api/:splat  200
-# /analyticsHub  https://[your-app-name].up.railway.app/analyticsHub  200
-
 # For now, redirect API calls to show sample data (frontend-only mode)
+# This will be updated when backend is deployed
 /api/*  /index.html  200
 /analyticsHub  /index.html  200
