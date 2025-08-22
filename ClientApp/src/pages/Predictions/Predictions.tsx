@@ -172,7 +172,7 @@ const Predictions: React.FC = () => {
 
   // Generate predictions using different algorithms
   const generatePredictions = () => {
-    if (!selectedMetric || !metrics) return;
+    if (!selectedMetric || !metrics || !Array.isArray(metrics)) return;
 
     const metricData = metrics.filter(m => m.name === selectedMetric);
     if (metricData.length < 10) {

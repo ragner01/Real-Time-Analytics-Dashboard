@@ -384,18 +384,24 @@ const Metrics: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Trending Metrics</h3>
           <div className="space-y-3">
-            {trendingMetrics?.slice(0, 5).map((metric, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900">{metric.name}</p>
-                  <p className="text-sm text-gray-500">{metric.category}</p>
+            {trendingMetrics && trendingMetrics.length > 0 ? (
+              trendingMetrics.slice(0, 5).map((metric, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">{metric.name}</p>
+                    <p className="text-sm text-gray-500">{metric.category}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">{metric.value}</p>
+                    <p className="text-sm text-gray-500">{metric.unit}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900">{metric.value}</p>
-                  <p className="text-sm text-gray-500">{metric.unit}</p>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                <p>No trending metrics available</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
