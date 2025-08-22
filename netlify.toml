@@ -6,45 +6,9 @@
 [build.environment]
   NODE_VERSION = "18"
   CI = "false"
-  NPM_FLAGS = "--legacy-peer-deps"
 
 # Force all routes to index.html for SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = true
-
-# Handle specific problematic routes
-[[redirects]]
-  from = "/dashboard"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/metrics"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/reports"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/predictions"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/settings"
-  to = "/index.html"
-  status = 200
-
-# Security headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    Cache-Control = "no-cache, no-store, must-revalidate"

@@ -1,16 +1,2 @@
-# Force all routes to index.html for SPA
+# Handle client-side routing for SPA
 /*    /index.html   200
-
-# Handle specific routes explicitly
-/dashboard  /index.html  200
-/metrics    /index.html  200
-/reports    /index.html  200
-/predictions /index.html  200
-/settings   /index.html  200
-
-# API routes
-/api/*     /index.html  200
-/analyticsHub /index.html  200
-
-# Prevent caching issues
-/index.html /index.html  200
