@@ -32,8 +32,19 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children }) =>
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    // SignalR URL configuration for different environments
+    const getSignalRUrl = (): string => {
+      // Check if we're in production (Netlify)
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        // Production: Use relative URLs or your deployed backend
+        return '/analyticsHub'; // This will be proxied by Netlify
+      }
+      // Development: Use localhost
+      return 'http://localhost:5089/analyticsHub';
+    };
+
     const newConnection = new HubConnectionBuilder()
-      .withUrl('https://localhost:7001/hub/analytics')
+      .withUrl(getSignalRUrl())
       .withAutomaticReconnect()
       .build();
 

@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://localhost:7001/api';
+// API configuration for different environments
+const getApiBaseUrl = (): string => {
+  // Check if we're in production (Netlify)
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    // Production: Use relative URLs or your deployed backend
+    return '/api'; // This will be proxied by Netlify
+  }
+  // Development: Use localhost
+  return 'http://localhost:5089/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,

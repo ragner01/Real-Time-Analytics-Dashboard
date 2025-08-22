@@ -11,7 +11,18 @@ import {
   generateSampleDataForUseCase
 } from './sampleDataService';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5089/api';
+// API configuration for different environments
+const getApiBaseUrl = (): string => {
+  // Check if we're in production (Netlify)
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    // Production: Use relative URLs or your deployed backend
+    return '/api'; // This will be proxied by Netlify
+  }
+  // Development: Use localhost
+  return 'http://localhost:5089/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Check if backend is available
 const isBackendAvailable = async (): Promise<boolean> => {

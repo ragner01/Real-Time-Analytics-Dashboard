@@ -9,6 +9,7 @@ namespace Real_Time_Analytics_Dashboard.Controllers;
 public class DashboardsController : ControllerBase
 {
     private readonly DashboardService _service;
+    
 
     public DashboardsController(DashboardService service)
     {
