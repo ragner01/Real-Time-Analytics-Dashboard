@@ -1,7 +1,9 @@
-# Handle client-side routing for SPA
+# Handle client-side routing for SPA - ALL routes go to index.html
 /*    /index.html   200
 
-# For now, redirect API calls to show sample data (frontend-only mode)
-# This will be updated when backend is deployed
+# Specific API and WebSocket routes (for when backend is deployed)
 /api/*  /index.html  200
 /analyticsHub  /index.html  200
+
+# Force no caching for development
+/index.html  /index.html  200

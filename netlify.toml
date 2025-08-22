@@ -7,14 +7,27 @@
   NODE_VERSION = "18"
   CI = "false"
 
+# Explicit redirects for SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Force HTTPS
+# Handle API routes (for when backend is deployed)
+[[redirects]]
+  from = "/api/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/analyticsHub"
+  to = "/index.html"
+  status = 200
+
+# Force HTTPS and security headers
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
+    Cache-Control = "no-cache, no-store, must-revalidate"
