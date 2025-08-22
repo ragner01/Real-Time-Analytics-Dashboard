@@ -1,288 +1,407 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from 'react-query';
-import { Responsive, WidthProvider } from 'react-grid-layout';
-import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
+import { useSignalR } from '../../contexts/SignalRContext';
+import { fetchMetrics, fetchTrendingMetrics } from '../../services/metricService';
 import MetricCard from '../../components/Dashboard/MetricCard';
 import ChartWidget from '../../components/Dashboard/ChartWidget';
-import { fetchMetrics, fetchTrendingMetrics } from '../../services/metricService';
-import { fetchDashboard } from '../../services/dashboardService';
-import { useAuth } from '../../contexts/AuthContext';
-import { useSignalR } from '../../contexts/SignalRContext';
-import toast from 'react-hot-toast';
+import { 
+  TrendingUp, 
+  Activity, 
+  BarChart3, 
+  PieChart, 
+  Settings, 
+  RefreshCw,
+  Plus,
+  Grid3X3,
+  List
+} from 'lucide-react';
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
+interface DashboardWidget {
+  id: string;
+  type: 'metric' | 'chart' | 'summary';
+  title: string;
+  data: any;
+  position: { x: number; y: number; w: number; h: number };
+}
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
-  const { joinDashboardGroup, leaveDashboardGroup } = useSignalR();
-  const [layout, setLayout] = useState<any[]>([]);
-  const [widgets, setWidgets] = useState<any[]>([]);
+  const [widgets, setWidgets] = useState<DashboardWidget[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isAddingWidget, setIsAddingWidget] = useState(false);
+  const { isConnected } = useSignalR();
 
-  // Fetch dashboard configuration
-  const { data: dashboard, isLoading: dashboardLoading } = useQuery(
-    ['dashboard', user?.id],
-    () => fetchDashboard(user?.id || ''),
-    {
-      enabled: !!user?.id,
-      onSuccess: (data) => {
-        if (data) {
-          setWidgets(data.widgets || []);
-          setLayout(data.widgets?.map((widget: any, index: number) => ({
-            i: widget.id,
-            x: widget.positionX || (index % 2) * 6,
-            y: widget.positionY || Math.floor(index / 2) * 4,
-            w: widget.width || 6,
-            h: widget.height || 4,
-            minW: 3,
-            minH: 2,
-          })) || []);
-        }
-      }
-    }
-  );
-
-  // Fetch metrics data
+  // Fetch dashboard data
   const { data: metrics, isLoading: metricsLoading } = useQuery(
-    ['metrics', 'latest'],
-    () => fetchMetrics('latest', 10),
-    {
-      refetchInterval: 30000, // Refresh every 30 seconds
-    }
+    ['dashboard-metrics'],
+    () => fetchMetrics('latest', 50),
+    { refetchInterval: 30000 }
   );
 
   const { data: trendingMetrics } = useQuery(
-    ['metrics', 'trending'],
-    () => fetchTrendingMetrics(24, 5),
-    {
-      refetchInterval: 60000, // Refresh every minute
-    }
+    ['dashboard-trending'],
+    () => fetchTrendingMetrics(24, 10),
+    { refetchInterval: 60000 }
   );
 
+  // Initialize default widgets
   useEffect(() => {
-    if (dashboard?.id) {
-      joinDashboardGroup(dashboard.id);
-      return () => {
-        if (dashboard.id) {
-          leaveDashboardGroup(dashboard.id);
+    if (metrics && trendingMetrics) {
+      const defaultWidgets: DashboardWidget[] = [
+        {
+          id: '1',
+          type: 'summary',
+          title: 'System Overview',
+          data: { metrics, trending: trendingMetrics },
+          position: { x: 0, y: 0, w: 12, h: 2 }
+        },
+        {
+          id: '2',
+          type: 'chart',
+          title: 'Performance Trends',
+          data: { metrics, type: 'line' },
+          position: { x: 0, y: 2, w: 6, h: 4 }
+        },
+        {
+          id: '3',
+          type: 'chart',
+          title: 'Category Distribution',
+          data: { metrics, type: 'doughnut' },
+          position: { x: 6, y: 2, w: 6, h: 4 }
+        },
+        {
+          id: '4',
+          type: 'metric',
+          title: 'Key Metrics',
+          data: { metrics: metrics?.slice(0, 4) },
+          position: { x: 0, y: 6, w: 12, h: 2 }
         }
-      };
+      ];
+      setWidgets(defaultWidgets);
     }
-  }, [dashboard?.id, joinDashboardGroup, leaveDashboardGroup]);
+  }, [metrics, trendingMetrics]);
 
-  const onLayoutChange = (newLayout: any[]) => {
-    setLayout(newLayout);
-    // Here you would save the new layout to the backend
-  };
-
-  const addWidget = (type: string) => {
-    const newWidget = {
-      id: `widget-${Date.now()}`,
-      type,
-      title: `New ${type} Widget`,
-      configuration: {},
-      positionX: 0,
-      positionY: 0,
-      width: 6,
-      height: 4,
-      isVisible: true,
+  const addWidget = () => {
+    const newWidget: DashboardWidget = {
+      id: Date.now().toString(),
+      type: 'chart',
+      title: 'New Widget',
+      data: { metrics, type: 'bar' },
+      position: { x: 0, y: widgets.length * 4, w: 6, h: 4 }
     };
-
     setWidgets([...widgets, newWidget]);
-    setLayout([
-      ...layout,
-      {
-        i: newWidget.id,
-        x: 0,
-        y: 0,
-        w: 6,
-        h: 4,
-        minW: 3,
-        minH: 2,
+    setIsAddingWidget(false);
+  };
+
+  const removeWidget = (id: string) => {
+    setWidgets(widgets.filter(w => w.id !== id));
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
       }
-    ]);
-
-    toast.success(`${type} widget added`);
-  };
-
-  const removeWidget = (widgetId: string) => {
-    setWidgets(widgets.filter(w => w.id !== widgetId));
-    setLayout(layout.filter(l => l.i !== widgetId));
-    toast.success('Widget removed');
-  };
-
-  const renderWidget = (widget: any) => {
-    switch (widget.type) {
-      case 'metric':
-        return (
-          <MetricCard
-            key={widget.id}
-            title={widget.title}
-            metrics={metrics || []}
-            onRemove={() => removeWidget(widget.id)}
-          />
-        );
-      case 'chart':
-        return (
-          <ChartWidget
-            key={widget.id}
-            title={widget.title}
-            configuration={widget.configuration}
-            data={trendingMetrics || []}
-            onRemove={() => removeWidget(widget.id)}
-          />
-        );
-      default:
-        return (
-          <div key={widget.id} className="chart-container">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{widget.title}</h3>
-              <button
-                onClick={() => removeWidget(widget.id)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ×
-              </button>
-            </div>
-            <p className="text-gray-500">Widget type: {widget.type}</p>
-          </div>
-        );
     }
   };
 
-  if (dashboardLoading) {
+  const widgetVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      scale: 0.95,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  if (metricsLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner"></div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center"
+      >
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"
+          />
+          <motion.h2
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-2xl font-bold text-gray-800 mb-2"
+          >
+            Loading Dashboard
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-gray-600"
+          >
+            Preparing your analytics view...
+          </motion.p>
+        </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">Monitor your key metrics and insights in real-time</p>
-        </div>
-        
-        {/* Widget controls */}
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => addWidget('metric')}
-            className="btn-primary"
-          >
-            Add Metric
-          </button>
-          <button
-            onClick={() => addWidget('chart')}
-            className="btn-secondary"
-          >
-            Add Chart
-          </button>
-        </div>
-      </div>
-
-      {/* Quick stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="metric-card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-blue-600 font-semibold">M</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Metrics</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {metricsLoading ? '...' : (metrics?.length || 0)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="metric-card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-green-600 font-semibold">T</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Trending</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {trendingMetrics?.length || 0}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="metric-card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span className="text-purple-600 font-semibold">W</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Widgets</p>
-              <p className="text-2xl font-semibold text-gray-900">{widgets.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="metric-card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <span className="text-yellow-600 font-semibold">U</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Last Updated</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {new Date().toLocaleTimeString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Widgets grid */}
-      {widgets.length > 0 ? (
-        <ResponsiveGridLayout
-          className="layout"
-          layouts={{ lg: layout }}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-          rowHeight={100}
-          onLayoutChange={onLayoutChange}
-          isDraggable={true}
-          isResizable={true}
-        >
-          {widgets.map(renderWidget)}
-        </ResponsiveGridLayout>
-      ) : (
-        <div className="text-center py-12">
-          <div className="mx-auto h-12 w-12 text-gray-400">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No widgets</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by adding your first widget.</p>
-          <div className="mt-6">
-            <button
-              onClick={() => addWidget('metric')}
-              className="btn-primary"
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6"
+    >
+      {/* Header Section */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
             >
-              Add Widget
-            </button>
+              Analytics Dashboard
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-gray-600 mt-2"
+            >
+              Real-time insights and performance monitoring
+            </motion.p>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex bg-white rounded-lg shadow-lg p-1"
+            >
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-md transition-colors ${
+                  viewMode === 'grid' 
+                    ? 'bg-blue-100 text-blue-600' 
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Grid3X3 size={20} />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-md transition-colors ${
+                  viewMode === 'list' 
+                    ? 'bg-blue-100 text-blue-600' 
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <List size={20} />
+              </button>
+            </motion.div>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsAddingWidget(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2"
+            >
+              <Plus size={20} />
+              <span>Add Widget</span>
+            </motion.button>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Status Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
+                />
+                <span className="text-sm text-gray-600">
+                  {isConnected ? 'Connected' : 'Disconnected'}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Activity size={16} className="text-blue-500" />
+                <span className="text-sm text-gray-600">
+                  {metrics?.length || 0} metrics active
+                </span>
+              </div>
+            </div>
+            
+            <motion.button
+              whileHover={{ rotate: 180 }}
+              transition={{ duration: 0.3 }}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <RefreshCw size={20} />
+            </motion.button>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      {/* Widgets Grid */}
+      <motion.div
+        variants={containerVariants}
+        className={`${
+          viewMode === 'grid' 
+            ? 'grid grid-cols-12 gap-6' 
+            : 'space-y-6'
+        }`}
+      >
+        <AnimatePresence>
+          {widgets.map((widget) => (
+            <motion.div
+              key={widget.id}
+              variants={widgetVariants}
+              layout
+              className={`${
+                viewMode === 'grid' 
+                  ? `col-span-${widget.position.w}` 
+                  : 'w-full'
+              }`}
+            >
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-800">{widget.title}</h3>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => removeWidget(widget.id)}
+                      className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                    >
+                      ×
+                    </motion.button>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  {widget.type === 'metric' && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {widget.data.metrics?.map((metric: any, index: number) => (
+                        <MetricCard key={index} metric={metric} />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {widget.type === 'chart' && (
+                    <ChartWidget 
+                      data={widget.data} 
+                      type={widget.data.type} 
+                    />
+                  )}
+                  
+                  {widget.type === 'summary' && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg text-center"
+                        >
+                          <TrendingUp size={24} className="mx-auto mb-2" />
+                          <div className="text-2xl font-bold">{metrics?.length || 0}</div>
+                          <div className="text-sm opacity-90">Total Metrics</div>
+                        </motion.div>
+                        
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg text-center"
+                        >
+                          <BarChart3 size={24} className="mx-auto mb-2" />
+                          <div className="text-2xl font-bold">
+                            {metrics?.filter((m: any) => m.status === 'Normal').length || 0}
+                          </div>
+                          <div className="text-sm opacity-90">Healthy</div>
+                        </motion.div>
+                        
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg text-center"
+                        >
+                          <PieChart size={24} className="mx-auto mb-2" />
+                          <div className="text-2xl font-bold">
+                            {trendingMetrics?.length || 0}
+                          </div>
+                          <div className="text-sm opacity-90">Trending</div>
+                        </motion.div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Add Widget Modal */}
+      <AnimatePresence>
+        {isAddingWidget && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setIsAddingWidget(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-white rounded-xl p-6 w-96 max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-semibold mb-4">Add New Widget</h3>
+              <div className="space-y-4">
+                <button
+                  onClick={addWidget}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Add Chart Widget
+                </button>
+                <button
+                  onClick={() => setIsAddingWidget(false)}
+                  className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
