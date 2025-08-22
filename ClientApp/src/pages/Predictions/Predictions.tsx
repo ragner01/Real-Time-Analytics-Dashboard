@@ -88,6 +88,7 @@ const Predictions: React.FC = () => {
 
   // Show loading state
   if (metricsLoading) {
+    console.log('Predictions: Showing loading state'); // Debug log
     return (
       <div className="p-6">
         <div className="text-center">
@@ -100,6 +101,7 @@ const Predictions: React.FC = () => {
 
   // Show error state
   if (metricsError) {
+    console.log('Predictions: Showing error state:', metricsError); // Debug log
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
@@ -109,6 +111,21 @@ const Predictions: React.FC = () => {
       </div>
     );
   }
+
+  // Check if we have data
+  if (!metrics || metrics.length === 0) {
+    console.log('Predictions: No data available, showing empty state'); // Debug log
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <h3 className="text-gray-800 font-medium">No prediction data available</h3>
+          <p className="text-gray-600 mt-1">No metrics data could be loaded for predictions.</p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('Predictions: Rendering with data, count:', metrics.length); // Debug log
 
   // Available prediction models
   const availableModels: PredictionModel[] = [

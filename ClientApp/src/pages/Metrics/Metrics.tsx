@@ -69,6 +69,7 @@ const Metrics: React.FC = () => {
 
   // Show loading state
   if (metricsLoading) {
+    console.log('Metrics: Showing loading state'); // Debug log
     return (
       <div className="p-6">
         <div className="text-center">
@@ -81,6 +82,7 @@ const Metrics: React.FC = () => {
 
   // Show error state
   if (metricsError) {
+    console.log('Metrics: Showing error state:', metricsError); // Debug log
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
@@ -96,6 +98,27 @@ const Metrics: React.FC = () => {
       </div>
     );
   }
+
+  // Check if we have data
+  if (!metrics || metrics.length === 0) {
+    console.log('Metrics: No data available, showing empty state'); // Debug log
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <h3 className="text-gray-800 font-medium">No metrics available</h3>
+          <p className="text-gray-600 mt-1">No metrics data could be loaded.</p>
+          <button 
+            onClick={() => refetchMetrics()}
+            className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('Metrics: Rendering with data, count:', metrics.length); // Debug log
 
   // Filter metrics based on selection
   const filteredMetrics = metrics?.filter(metric => 

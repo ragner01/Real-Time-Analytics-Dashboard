@@ -26,6 +26,13 @@ const API_BASE_URL = getApiBaseUrl();
 
 // Check if backend is available
 const isBackendAvailable = async (): Promise<boolean> => {
+  // In production (Netlify), always use sample data since backend is not deployed
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    console.log('Production environment detected, using sample data');
+    return false;
+  }
+  
+  // Only check backend in development
   try {
     await axios.get(`${API_BASE_URL}/health`, { timeout: 3000 });
     return true;
@@ -47,11 +54,15 @@ export const fetchMetrics = async (type: string = 'latest', limit: number = 100)
     } else {
       // Fallback to sample data
       console.log('Backend not available, using sample data');
-      return generateSampleMetrics(limit);
+      const sampleData = generateSampleMetrics(limit);
+      console.log('Generated sample data:', sampleData.length, 'metrics');
+      return sampleData;
     }
   } catch (error) {
     console.log('Error fetching metrics from backend, using sample data:', error);
-    return generateSampleMetrics(limit);
+    const sampleData = generateSampleMetrics(limit);
+    console.log('Generated sample data after error:', sampleData.length, 'metrics');
+    return sampleData;
   }
 };
 
