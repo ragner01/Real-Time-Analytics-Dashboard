@@ -6,7 +6,7 @@ namespace Real_Time_Analytics_Dashboard.Services;
 public class MongoOptions
 {
     public string ConnectionString { get; set; } = null!;
-    public string Database { get; set; } = null!;
+    public string DatabaseName { get; set; } = null!;
 }
 
 public class MongoService
@@ -16,7 +16,7 @@ public class MongoService
     public MongoService(IOptions<MongoOptions> options)
     {
         var client = new MongoClient(options.Value.ConnectionString);
-        _db = client.GetDatabase(options.Value.Database);
+        _db = client.GetDatabase(options.Value.DatabaseName);
     }
 
     public IMongoCollection<T> Collection<T>(string name) => _db.GetCollection<T>(name);

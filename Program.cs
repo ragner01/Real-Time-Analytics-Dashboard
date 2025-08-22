@@ -17,7 +17,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-builder.Services.Configure<MongoOptions>(builder.Configuration.GetSection("Mongo"));
+// Configure MongoDB options
+builder.Services.Configure<MongoOptions>(builder.Configuration.GetSection("MongoDB"));
 
 // Dependency Injection
 builder.Services.AddSingleton<MongoService>();
