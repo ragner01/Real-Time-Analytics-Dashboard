@@ -37,22 +37,65 @@ const Metrics: React.FC = () => {
   const [timeRange, setTimeRange] = useState<string>('24h');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  console.log('Metrics component rendering...'); // Debug log
+
   // Fetch metrics data
-  const { data: metrics, isLoading: metricsLoading, refetch: refetchMetrics } = useQuery(
+  const { data: metrics, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useQuery(
     ['metrics', 'latest', selectedCategory, timeRange],
     () => fetchMetrics('latest', 100),
     {
       refetchInterval: 30000, // Refresh every 30 seconds
+      onError: (error) => {
+        console.error('Metrics fetch error:', error); // Debug log
+      },
     }
   );
 
-  const { data: trendingMetrics } = useQuery(
+  const { data: trendingMetrics, error: trendingError } = useQuery(
     ['metrics', 'trending', timeRange],
     () => fetchTrendingMetrics(24, 20),
     {
       refetchInterval: 60000, // Refresh every minute
+      onError: (error) => {
+        console.error('Trending metrics fetch error:', error); // Debug log
+      },
     }
   );
+
+  console.log('Metrics data:', metrics); // Debug log
+  console.log('Trending metrics:', trendingMetrics); // Debug log
+  console.log('Loading state:', metricsLoading); // Debug log
+  console.log('Error state:', metricsError); // Debug log
+
+  // Show loading state
+  if (metricsLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading metrics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (metricsError) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <h3 className="text-red-800 font-medium">Error loading metrics</h3>
+          <p className="text-red-600 mt-1">Please try refreshing the page.</p>
+          <button 
+            onClick={() => refetchMetrics()}
+            className="mt-3 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Filter metrics based on selection
   const filteredMetrics = metrics?.filter(metric => 
@@ -151,14 +194,6 @@ const Metrics: React.FC = () => {
   const handleTimeRangeChange = (range: string) => {
     setTimeRange(range);
   };
-
-  if (metricsLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 space-y-6">

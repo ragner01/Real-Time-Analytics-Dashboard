@@ -68,14 +68,47 @@ const Predictions: React.FC = () => {
   //   parameters: {},
   // });
 
+  console.log('Predictions component rendering...'); // Debug log
+
   // Fetch metrics data for prediction
-  const { data: metrics, isLoading: metricsLoading } = useQuery(
+  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useQuery(
     ['metrics', 'predictions'],
     () => fetchMetrics('latest', 1000),
     {
       refetchInterval: 60000, // Refresh every minute
+      onError: (error) => {
+        console.error('Metrics fetch error in Predictions:', error); // Debug log
+      },
     }
   );
+
+  console.log('Predictions - Metrics data:', metrics); // Debug log
+  console.log('Predictions - Loading state:', metricsLoading); // Debug log
+  console.log('Predictions - Error state:', metricsError); // Debug log
+
+  // Show loading state
+  if (metricsLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading prediction data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (metricsError) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <h3 className="text-red-800 font-medium">Error loading prediction data</h3>
+          <p className="text-red-600 mt-1">Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Available prediction models
   const availableModels: PredictionModel[] = [
@@ -384,14 +417,6 @@ const Predictions: React.FC = () => {
       },
     },
   };
-
-  if (metricsLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 space-y-6">
