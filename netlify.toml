@@ -6,25 +6,42 @@
 [build.environment]
   NODE_VERSION = "18"
   CI = "false"
+  NPM_FLAGS = "--legacy-peer-deps"
 
-# Explicit redirects for SPA routing
+# Force all routes to index.html for SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
 
-# Handle API routes (for when backend is deployed)
+# Handle specific problematic routes
 [[redirects]]
-  from = "/api/*"
+  from = "/dashboard"
   to = "/index.html"
   status = 200
 
 [[redirects]]
-  from = "/analyticsHub"
+  from = "/metrics"
   to = "/index.html"
   status = 200
 
-# Force HTTPS and security headers
+[[redirects]]
+  from = "/reports"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/predictions"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/settings"
+  to = "/index.html"
+  status = 200
+
+# Security headers
 [[headers]]
   for = "/*"
   [headers.values]
