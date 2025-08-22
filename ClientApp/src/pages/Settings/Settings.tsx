@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSignalR } from '../../contexts/SignalRContext';
 import toast from 'react-hot-toast';
@@ -38,7 +38,7 @@ interface DataSource {
 
 const Settings: React.FC = () => {
   const { user } = useAuth();
-  const { connectionStatus } = useSignalR();
+  const { isConnected } = useSignalR();
   const [activeTab, setActiveTab] = useState<string>('preferences');
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     theme: 'light',
@@ -650,17 +650,17 @@ const Settings: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                connectionStatus === 'Connected' ? 'bg-green-100' : 'bg-red-100'
-              }`}>
-                <span className={`font-semibold ${
-                  connectionStatus === 'Connected' ? 'text-green-600' : 'text-red-600'
-                }`}>C</span>
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Connection</p>
-              <p className="text-2xl font-semibold text-gray-900">{connectionStatus}</p>
+                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                 isConnected ? 'bg-green-100' : 'bg-red-100'
+               }`}>
+                 <span className={`font-semibold ${
+                   isConnected ? 'text-green-600' : 'text-red-600'
+                 }`}>C</span>
+               </div>
+             </div>
+             <div className="ml-4">
+               <p className="text-sm font-medium text-gray-500">Connection</p>
+               <p className="text-2xl font-semibold text-gray-900">{isConnected ? 'Connected' : 'Disconnected'}</p>
             </div>
           </div>
         </div>

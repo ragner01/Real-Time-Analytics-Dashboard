@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery } from 'react-query';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -15,7 +15,7 @@ import {
   Filler,
 } from 'chart.js';
 import { fetchMetrics } from '../../services/metricService';
-import { useAuth } from '../../contexts/AuthContext';
+// import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 ChartJS.register(
@@ -56,7 +56,7 @@ interface Report {
 }
 
 const Reports: React.FC = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [showReportBuilder, setShowReportBuilder] = useState(false);
@@ -162,7 +162,7 @@ const Reports: React.FC = () => {
           };
           break;
         case 'bar':
-          const categories = [...new Set(filteredData.map(m => m.category))];
+          const categories = Array.from(new Set(filteredData.map(m => m.category)));
           chartData = {
             labels: categories,
             datasets: [{

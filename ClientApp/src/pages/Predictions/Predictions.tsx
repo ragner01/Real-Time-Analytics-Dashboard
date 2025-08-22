@@ -14,7 +14,7 @@ import {
   Filler,
 } from 'chart.js';
 import { fetchMetrics } from '../../services/metricService';
-import { useAuth } from '../../contexts/AuthContext';
+// import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 ChartJS.register(

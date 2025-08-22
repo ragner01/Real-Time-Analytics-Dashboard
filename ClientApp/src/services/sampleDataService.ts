@@ -85,32 +85,32 @@ const metricCategories = {
 };
 
 // Generate realistic time series data with trends and seasonality
-const generateTimeSeriesData = (
-  baseValue: number,
-  trend: number,
-  seasonality: number,
-  noise: number,
-  periods: number
-): number[] => {
-  const data: number[] = [];
-  let currentValue = baseValue;
+// const generateTimeSeriesData = (
+//   baseValue: number,
+//   trend: number,
+//   seasonality: number,
+//   noise: number,
+//   periods: number
+// ): number[] => {
+//   const data: number[] = [];
+//   let currentValue = baseValue;
 
-  for (let i = 0; i < periods; i++) {
-    // Add trend
-    currentValue += trend;
+//   for (let i = 0; i < periods; i++) {
+//     // Add trend
+//     currentValue += trend;
     
-    // Add seasonality (daily pattern)
-    const hourOfDay = i % 24;
-    const seasonalFactor = 1 + seasonality * Math.sin((hourOfDay / 24) * 2 * Math.PI);
+//     // Add seasonality (daily pattern)
+//     const hourOfDay = i % 24;
+//     const seasonalFactor = 1 + seasonality * Math.sin((hourOfDay / 24) * 2 * Math.PI);
     
-    // Add noise
-    const noiseFactor = 1 + (Math.random() - 0.5) * noise;
+//     // Add noise
+//     const noiseFactor = 1 + (Math.random() - 0.5) * noise;
     
-    data.push(Math.max(0, currentValue * seasonalFactor * noiseFactor));
-  }
+//     data.push(Math.max(0, currentValue * seasonalFactor * noiseFactor));
+//   }
 
-  return data;
-};
+//   return data;
+// };
 
 // Generate sample metrics with realistic patterns
 export const generateSampleMetrics = (count: number = 100): Metric[] => {
